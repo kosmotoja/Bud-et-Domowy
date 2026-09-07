@@ -1,0 +1,68 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Neon Wallet / Bank Outline with Glow -->
+    <path
+        android:pathData="M34,44 C34,40 37,37 41,37 L67,37 C71,37 74,40 74,44 L74,68 C74,72 71,75 67,75 L41,75 C37,75 34,72 34,68 Z"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="34"
+                android:startY="37"
+                android:endX="74"
+                android:endY="75"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#10B981" />
+                <item android:offset="1.0" android:color="#8B5CF6" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Wallet Flap -->
+    <path
+        android:pathData="M58,51 L72,51 C74.2,51 76,52.8 76,55 L76,61 C76,63.2 74.2,65 72,65 L58,65 C56.5,65 55,63.8 55,62 L55,54 C55,52.2 56.5,51 58,51 Z"
+        android:fillColor="#1F2338"
+        android:strokeWidth="2.5"
+        android:strokeColor="#06B6D4" />
+
+    <!-- Flap Clasp / Coin Dot -->
+    <path
+        android:pathData="M63,58 A2.5,2.5 0 1 0 63,58.01 Z"
+        android:fillColor="#10B981" />
+
+    <!-- Coin Rising on Top -->
+    <path
+        android:pathData="M54,26 A8,8 0 1 0 54,42 A8,8 0 1 0 54,26 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="46"
+                android:startY="26"
+                android:endX="62"
+                android:endY="42"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#34D399" />
+                <item android:offset="1.0" android:color="#10B981" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Coin Inner Symbol "zł" or Polish currency / upward mark -->
+    <path
+        android:pathData="M52,31 L56,31 M53,34 L56,34 M52,37 L56,37"
+        android:strokeWidth="1.5"
+        android:strokeColor="#0E101A"
+        android:strokeLineCap="round" />
+
+    <!-- Growth indicator curve inside card -->
+    <path
+        android:pathData="M40,65 L46,58 L51,62 L60,53"
+        android:strokeWidth="2.5"
+        android:strokeColor="#10B981"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>
