@@ -36,7 +36,23 @@ enum class BudgetCategory(
 data class CategorySummary(
     val category: BudgetCategory,
     val amount: Double,
-    val percentage: Float // 0f to 1f
+    val percentage: Float, // 0f to 1f of total expenses
+    val limit: Double? = null,
+    val limitPercentage: Float? = null // percentage of limit consumed (e.g. 0.85 = 85%)
+) {
+    val isNearLimit: Boolean
+        get() = (limitPercentage ?: 0f) >= 0.8f && (limitPercentage ?: 0f) < 1.0f
+
+    val isOverLimit: Boolean
+        get() = (limitPercentage ?: 0f) >= 1.0f
+}
+
+data class MonthlyHistoryPoint(
+    val monthKey: MonthKey,
+    val income: Double,
+    val expenses: Double,
+    val savings: Double,
+    val freeFunds: Double
 )
 
 data class MonthKey(

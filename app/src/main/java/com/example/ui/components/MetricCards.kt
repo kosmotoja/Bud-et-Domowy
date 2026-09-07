@@ -56,6 +56,9 @@ fun MetricCardsGrid(
     totalExpenses: Double,
     savings: Double,
     freeFunds: Double,
+    effectiveFreeFunds: Double,
+    rolloverAmount: Double,
+    isRolloverEnabled: Boolean,
     isDeficit: Boolean,
     onEditIncome: () -> Unit,
     onAddExpense: () -> Unit,
@@ -133,15 +136,22 @@ fun MetricCardsGrid(
                     .testTag("metric_tile_savings")
             )
 
-            val freeFundsFormatted = if (freeFunds >= 0) {
-                "+${currencyFormatter.format(freeFunds)} zł"
+            val displayFunds = if (isRolloverEnabled) effectiveFreeFunds else freeFunds
+            val freeFundsFormatted = if (displayFunds >= 0) {
+                "+${currencyFormatter.format(displayFunds)} zł"
             } else {
-                "${currencyFormatter.format(freeFunds)} zł"
+                "${currencyFormatter.format(displayFunds)} zł"
             }
+
+            val rolloverSubtitle = if (isRolloverEnabled && rolloverAmount != 0.0) {
+                val sign = if (rolloverAmount > 0) "+" else ""
+                "$sign${currencyFormatter.format(rolloverAmount)} zł z poprz. m-ca"
+            } else null
 
             ImmersiveMetricTile(
                 title = "Wolne środki",
                 amountText = freeFundsFormatted,
+                subtitle = rolloverSubtitle,
                 titleColor = if (isDeficit) ColorExpenseLight else ColorFreeFundsLight,
                 valueColor = if (isDeficit) ColorExpenseShine else ColorFreeFundsShine,
                 accentColor = if (isDeficit) ColorDeficit else ColorFreeFunds,
@@ -163,6 +173,7 @@ fun ImmersiveMetricTile(
     valueColor: Color,
     accentColor: Color,
     modifier: Modifier = Modifier,
+    subtitle: String? = null,
     actionSymbol: String? = null,
     onAction: (() -> Unit)? = null
 ) {
@@ -219,9 +230,21 @@ fun ImmersiveMetricTile(
                 ),
                 color = valueColor
             )
+
+            if (subtitle != null) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Normal
+                    ),
+                    color = Slate500
+                )
+            }
         }
 
-        // Bottom Accent Line Glow (Immersive UI: h-[2px] bg-<accent>-500/30)
+        // Bottom Accent Line Glow
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)

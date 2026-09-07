@@ -19,7 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -45,9 +46,9 @@ import androidx.compose.ui.unit.sp
 import com.example.model.BudgetCategory
 import com.example.model.CategorySummary
 import com.example.ui.theme.AppBorderSubtle
-import com.example.ui.theme.AppSurface
 import com.example.ui.theme.AppSurfaceElevated
 import com.example.ui.theme.AppSurfaceGlass
+import com.example.ui.theme.ColorDeficit
 import com.example.ui.theme.ColorExpense
 import com.example.ui.theme.Slate300
 import com.example.ui.theme.Slate400
@@ -65,6 +66,7 @@ fun CategoryProgressList(
     categorySummaries: List<CategorySummary>,
     totalExpenses: Double,
     onResetCategory: (BudgetCategory) -> Unit,
+    onManageLimits: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
@@ -91,15 +93,47 @@ fun CategoryProgressList(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "KATEGORIE WYDATKÓW",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    fontSize = 10.sp
-                ),
-                color = Slate500
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = "KATEGORIE WYDATKÓW",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
+                        fontSize = 10.sp
+                    ),
+                    color = Slate500
+                )
+
+                // Button to manage limits
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Slate800.copy(alpha = 0.6f))
+                        .clickable { onManageLimits() }
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(3.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Tune,
+                            contentDescription = "Limity",
+                            tint = Slate400,
+                            modifier = Modifier.size(10.dp)
+                        )
+                        Text(
+                            text = "Limity",
+                            fontSize = 9.sp,
+                            color = Slate400,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
 
             Text(
                 text = "Suma: ${currencyFormatter.format(totalExpenses)} zł",
@@ -173,11 +207,25 @@ private fun CategoryRowItem(
     currencyFormatter: DecimalFormat,
     onResetClick: () -> Unit
 ) {
+    // If a limit is set, progress represents amount / limit; otherwise percentage of total
+    val progressFraction = if (summary.limit != null && summary.limit > 0.0) {
+        (summary.amount / summary.limit).toFloat().coerceIn(0f, 1f)
+    } else {
+        summary.percentage.coerceIn(0f, 1f)
+    }
+
     val animatedProgress by animateFloatAsState(
-        targetValue = summary.percentage.coerceIn(0f, 1f),
+        targetValue = progressFraction,
         animationSpec = tween(durationMillis = 600),
         label = "progress"
     )
+
+    // Limit color feedback: orange at >=80%, red at >=100%
+    val barColor = when {
+        summary.isOverLimit -> ColorDeficit
+        summary.isNearLimit -> Color(0xFFF97316) // Amber / Orange warning
+        else -> summary.category.color
+    }
 
     Row(
         modifier = Modifier
@@ -187,13 +235,29 @@ private fun CategoryRowItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Dot: w-2 h-2 rounded-full (8.dp)
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(summary.category.color)
-        )
+        // Dot or Warning Icon
+        if (summary.isOverLimit) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = "Przekroczono limit",
+                tint = ColorDeficit,
+                modifier = Modifier.size(12.dp)
+            )
+        } else if (summary.isNearLimit) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = "Blisko limitu",
+                tint = Color(0xFFF97316),
+                modifier = Modifier.size(12.dp)
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(summary.category.color)
+            )
+        }
 
         // Middle: Name, Amount & Progress bar
         Column(
@@ -205,14 +269,27 @@ private fun CategoryRowItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = summary.category.displayName,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 11.sp
-                    ),
-                    color = Slate300
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = summary.category.displayName,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 11.sp
+                        ),
+                        color = if (summary.isOverLimit) ColorDeficit else Slate300
+                    )
+
+                    if (summary.limit != null && summary.limit > 0.0) {
+                        Text(
+                            text = "(limit: ${currencyFormatter.format(summary.limit)} zł)",
+                            fontSize = 9.sp,
+                            color = if (summary.isOverLimit) ColorDeficit.copy(alpha = 0.8f) else Slate500
+                        )
+                    }
+                }
 
                 Text(
                     text = "${currencyFormatter.format(summary.amount)} zł",
@@ -220,11 +297,11 @@ private fun CategoryRowItem(
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Normal
                     ),
-                    color = Slate400
+                    color = if (summary.isOverLimit) ColorDeficit else Slate400
                 )
             }
 
-            // Slim progress bar: h-1 bg-slate-800 rounded-full
+            // Progress bar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -238,7 +315,7 @@ private fun CategoryRowItem(
                             .fillMaxWidth(animatedProgress)
                             .fillMaxHeight()
                             .clip(RoundedCornerShape(2.dp))
-                            .background(summary.category.color)
+                            .background(barColor)
                     )
                 }
             }
@@ -262,4 +339,5 @@ private fun CategoryRowItem(
         }
     }
 }
+
 

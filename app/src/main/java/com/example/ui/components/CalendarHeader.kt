@@ -18,10 +18,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
-import androidx.compose.material.icons.filled.AccountBalanceWallet
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Today
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.Savings
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -47,16 +47,13 @@ import com.example.ui.theme.AppBorder
 import com.example.ui.theme.AppBorderSubtle
 import com.example.ui.theme.AppSurface
 import com.example.ui.theme.AppSurfaceElevated
-import com.example.ui.theme.AppSurfaceGlass
 import com.example.ui.theme.ColorFreeFunds
 import com.example.ui.theme.ColorFreeFundsLight
 import com.example.ui.theme.ColorIncome
 import com.example.ui.theme.Slate400
 import com.example.ui.theme.Slate500
 import com.example.ui.theme.Slate800
-import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
 
 @Composable
 fun CalendarHeader(
@@ -67,6 +64,10 @@ fun CalendarHeader(
     onNextMonth: () -> Unit,
     onSelectMonth: (MonthKey) -> Unit,
     onJumpToToday: () -> Unit,
+    onOpenTrends: () -> Unit,
+    onOpenRecurring: () -> Unit,
+    onOpenGoals: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
@@ -80,7 +81,7 @@ fun CalendarHeader(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 2.dp, vertical = 4.dp),
+                .padding(horizontal = 2.dp, vertical = 2.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -88,35 +89,73 @@ fun CalendarHeader(
                 text = "BUDŻET DOMOWY",
                 style = MaterialTheme.typography.titleSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.6.sp,
-                    fontSize = 13.sp
+                    letterSpacing = 1.4.sp,
+                    fontSize = 12.sp
                 ),
                 color = Slate400
             )
 
-            // [Dzisiaj] button with Immersive UI pill styling
-            if (!isCurrentMonth) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(99.dp))
-                        .background(Slate800.copy(alpha = 0.5f))
-                        .border(1.dp, ColorFreeFunds.copy(alpha = 0.3f), RoundedCornerShape(99.dp))
-                        .clickable {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            onJumpToToday()
-                        }
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                        .testTag("button_today")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                // Trends / History
+                IconButton(
+                    onClick = onOpenTrends,
+                    modifier = Modifier.size(32.dp).testTag("btn_open_trends")
                 ) {
-                    Text(
-                        text = "DZISIAJ",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.2.sp,
-                            fontSize = 10.sp
-                        ),
-                        color = ColorFreeFundsLight
-                    )
+                    Icon(Icons.Default.ShowChart, contentDescription = "Trendy", tint = Slate400, modifier = Modifier.size(17.dp))
+                }
+
+                // Recurring expenses
+                IconButton(
+                    onClick = onOpenRecurring,
+                    modifier = Modifier.size(32.dp).testTag("btn_open_recurring")
+                ) {
+                    Icon(Icons.Default.Repeat, contentDescription = "Stałe opłaty", tint = Slate400, modifier = Modifier.size(17.dp))
+                }
+
+                // Savings goals
+                IconButton(
+                    onClick = onOpenGoals,
+                    modifier = Modifier.size(32.dp).testTag("btn_open_goals")
+                ) {
+                    Icon(Icons.Default.Savings, contentDescription = "Cele", tint = Slate400, modifier = Modifier.size(17.dp))
+                }
+
+                // Settings
+                IconButton(
+                    onClick = onOpenSettings,
+                    modifier = Modifier.size(32.dp).testTag("btn_open_settings")
+                ) {
+                    Icon(Icons.Default.Settings, contentDescription = "Ustawienia", tint = Slate400, modifier = Modifier.size(17.dp))
+                }
+
+                // [Dzisiaj] button with Immersive UI pill styling
+                if (!isCurrentMonth) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(99.dp))
+                            .background(Slate800.copy(alpha = 0.5f))
+                            .border(1.dp, ColorFreeFunds.copy(alpha = 0.3f), RoundedCornerShape(99.dp))
+                            .clickable {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onJumpToToday()
+                            }
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                            .testTag("button_today")
+                    ) {
+                        Text(
+                            text = "DZIŚ",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp,
+                                fontSize = 9.sp
+                            ),
+                            color = ColorFreeFundsLight
+                        )
+                    }
                 }
             }
         }
